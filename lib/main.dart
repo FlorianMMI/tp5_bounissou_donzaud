@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tp5_bounissou_donzaud/services/Weather_Data.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,6 +56,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WeatherService weatherService = WeatherService();
+    weatherService.fetchWeatherData("Localisation");
+  }
 
   void _incrementCounter() {
     setState(() {
