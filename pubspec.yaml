@@ -37,6 +37,8 @@ dependencies:
   geolocator: ^14.0.2
   geocoding: ^4.0.0
   dio: ^5.9.0
+  google_fonts: ^8.0.0
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:
@@ -61,9 +63,12 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/fog.mp4
+    - assets/night.mp4
+    - assets/rain.mp4
+    - assets/snow.mp4
+    - assets/sunny.mp4
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
