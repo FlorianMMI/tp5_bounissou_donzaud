@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     WeatherService weatherService = WeatherService();
-    weatherService.fetchWeatherData("Limoges");
+    weatherService.fetchWeatherData("Localisation");
   }
 
   void _incrementCounter() {
