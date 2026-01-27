@@ -1,16 +1,33 @@
-# tp5_bounissou_donzaud
+# Nom du Projet
 
-A new Flutter project.
+## 👥 Équipe
+- Florian Bounissou (florian.bounissou@etu.unilim.fr)
+- François Donzaud (françois.donzaud@etu.unilim.fr)
 
-## Getting Started
+## 📱 Description
+Réalisation d'une application météo permettant de consulter les prévisions météorologiques pour différentes villes, avec une interface utilisateur intuitive et des fonctionnalités avancées. Sans limite de taille de villes
 
-This project is a starting point for a Flutter application.
+## 🎯 Orientation choisie
+[Équilibrée]
 
-A few resources to get you started if this is your first Flutter project:
+## ✅ Contraintes respectées
+- [ ] Contrainte 1 - Consommation d'une API (publique, créée par vous..etc)
+- [ ] Contrainte 2 - Intégration d'au moins un package de pub.dev pertinent pour votre métier
+- [ ] Contrainte 3 - Utilisation d'images (assets locaux ou réseau) de manière cohérente
+- [ ] Contrainte 4 - Intégration d'animations (Hero, AnimatedContainer, Lottie, etc.)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🚀 Installation
+[Instructions pour lancer le projet]
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Screenshots
+[3-5 captures d'écran de l'application]
+
+
+## 🔑 API/Credentials (si applicable)
+Aucune Clé API nécessaire, utilisation de l'API ouverte de Open-Meteo et Nominatim OpenStreetMap.
+
+## 🧪 Tests
+[Commande pour lancer les tests s'il y en a]
+
+## 📝 Difficultés rencontrées
+1 - le pub Geocoding résulter sur divers erreur et ne trouver pas les villes correctement. Elle a était réglès via l'utilisation de l'API noenemnominatim.openstreetmap.org

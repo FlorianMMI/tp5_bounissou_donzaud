@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tp5_bounissou_donzaud/widgets/Ville.dart';
-import 'package:tp5_bounissou_donzaud/services/Weather_Data.dart';
+import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
 import 'package:tp5_bounissou_donzaud/widgets/addville.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,18 +39,17 @@ class _ListVilleState extends State<ListVille> {
       // Récupérer les villes depuis SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       List<String> savedVilles = prefs.getStringList('villes') ?? [];
-      print('\n=== Chargement des villes ===');
-      print('Villes sauvegardées: $savedVilles');
+      
 
       // Charger la température pour chaque ville sauvegardée
       for (String ville in savedVilles) {
-        print('\nChargement de: $ville');
+        
         try {
           final temp = await weatherService.fetchTempData(ville);
           tempVilles[ville] = temp;
-          print('✓ $ville: $temp°C');
+          
         } catch (e) {
-          print('✗ Erreur pour $ville: $e');
+          
           String errorMsg = e.toString();
           if (errorMsg.contains('Impossible de trouver')) {
             tempVilles[ville] = "?";

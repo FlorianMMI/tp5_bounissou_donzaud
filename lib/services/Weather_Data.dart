@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -38,7 +36,7 @@ class WeatherService {
       lon = position.longitude;
     } else {
       try {
-        print('Geocoding address: $city');
+        
         
         // Utilisation de l'API Nominatim pour le geocoding
         final geoResponse = await _dio.get(
@@ -54,9 +52,7 @@ class WeatherService {
             },
           ),
         );
-        
-        print('Geocoding result for $city: ${geoResponse.data}');
-        
+                
         if (geoResponse.data == null || (geoResponse.data as List).isEmpty) {
           throw Exception('Impossible de trouver des coordonnées pour $city');
         }
@@ -65,9 +61,8 @@ class WeatherService {
         lat = double.parse(location['lat']);
         lon = double.parse(location['lon']);
         
-        print('Coordonnées trouvées: lat=$lat, lon=$lon');
+        
       } catch (e) {
-        print('Erreur geocoding pour $city: $e');
         rethrow;
       }
     }
@@ -123,9 +118,7 @@ class WeatherService {
     } 
 
     else {
-      try {
-        print('Geocoding address: $city');
-        
+      try {        
         // Utilisation de l'API Nominatim pour le geocoding
         final geoResponse = await _dio.get(
           'https://nominatim.openstreetmap.org/search',
@@ -141,7 +134,7 @@ class WeatherService {
           ),
         );
         
-        print('Geocoding result for $city: ${geoResponse.data}');
+        
         
         if (geoResponse.data == null || (geoResponse.data as List).isEmpty) {
           throw Exception('Impossible de trouver des coordonnées pour $city');
@@ -151,9 +144,9 @@ class WeatherService {
         lat = double.parse(location['lat']);
         lon = double.parse(location['lon']);
         
-        print('Coordonnées trouvées: lat=$lat, lon=$lon');
+        
       } catch (e) {
-        print('Erreur geocoding pour $city: $e');
+        
         rethrow;
       }
     }
@@ -162,17 +155,17 @@ class WeatherService {
       final response = await _dio.get(
         'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m&timezone=Europe%2FLondon',
       );
-      print('Réponse API pour $city: ${response.statusCode}');
+      
 
       if (response.statusCode == 200) {
         if (response.data == null ||
             response.data['current'] == null ||
             response.data['current']['temperature_2m'] == null) {
-          print('Données manquantes dans la réponse API: ${response.data}');
+          
           throw Exception('Données météo incomplètes');
         }
         String data = response.data['current']['temperature_2m'].toString();
-        print('Température pour $city: $data°C');
+        
         return data;
       } else {
         throw Exception('Erreur API: ${response.statusCode}');
@@ -180,7 +173,7 @@ class WeatherService {
 
       // Gestion des erreurs de requête
     } catch (e) {
-      print('Erreur complète fetchTempData: $e');
+      
       rethrow;
     }
   }
