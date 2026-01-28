@@ -1,20 +1,20 @@
 # Nom du Projet
 
 ## 👥 Équipe
-- Prénom Nom (email)
-- Prénom Nom (email)
+- Florian Bounissou (florian.bounissou@etu.unilim.fr)
+- François Donzaud (françois.donzaud@etu.unilim.fr)
 
 ## 📱 Description
-[Description du projet en 3-5 phrases]
+Réalisation d'une application météo permettant de consulter les prévisions météorologiques pour différentes villes, avec une interface utilisateur intuitive et des fonctionnalités avancées. Sans limite de taille de villes
 
 ## 🎯 Orientation choisie
-[Riche en fonctionnel / Riche en design / Équilibrée]
+[Équilibrée]
 
 ## ✅ Contraintes respectées
-- [ ] Contrainte 1
-- [ ] Contrainte 2
-- [ ] Contrainte 3
-- [ ] Contrainte 4
+- [ ] Contrainte 1 - Consommation d'une API (publique, créée par vous..etc)
+- [ ] Contrainte 2 - Intégration d'au moins un package de pub.dev pertinent pour votre métier
+- [ ] Contrainte 3 - Utilisation d'images (assets locaux ou réseau) de manière cohérente
+- [ ] Contrainte 4 - Intégration d'animations (Hero, AnimatedContainer, Lottie, etc.)
 
 ## 🚀 Installation
 [Instructions pour lancer le projet]
@@ -22,14 +22,12 @@
 ## 📸 Screenshots
 [3-5 captures d'écran de l'application]
 
-## 🎨 Design (si applicable)
-[Lien vers le template Dribbble utilisé]
 
 ## 🔑 API/Credentials (si applicable)
-[Instructions pour obtenir les clés API nécessaires]
+Aucune Clé API nécessaire, utilisation de l'API ouverte de Open-Meteo et Nominatim OpenStreetMap.
 
 ## 🧪 Tests
 [Commande pour lancer les tests s'il y en a]
 
 ## 📝 Difficultés rencontrées
-[2-3 défis techniques que vous avez surmontés]
+1 - le pub Geocoding résulter sur divers erreur et ne trouver pas les villes correctement. Elle a était réglès via l'utilisation de l'API noenemnominatim.openstreetmap.org
