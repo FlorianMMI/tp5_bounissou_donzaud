@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 class WeatherService {
   final Dio _dio = Dio();
 
-  Future<void> fetchWeatherData(String city) async {
+  Future<Map<String, dynamic>> fetchWeatherData(String city) async {
     // On demande la permission de localisation + on verifie qu'on l'a bien
     LocationPermission permission;
 

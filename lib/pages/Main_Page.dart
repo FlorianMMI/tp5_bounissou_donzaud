@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tp5_bounissou_donzaud/services/Weather_Data.dart';
+import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
 import 'package:tp5_bounissou_donzaud/widgets/glass_container.dart';
 import 'package:tp5_bounissou_donzaud/widgets/weather_info_card.dart';
 import 'package:tp5_bounissou_donzaud/widgets/video_weather_background.dart';
@@ -43,19 +43,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
     try {
       // Récupère les données météo via GPS
-      final data = await _weatherService.fetchWeatherDataByLocation();
+      final data = await _weatherService.fetchWeatherData("Localisation");
       
       // Récupère les coordonnées depuis les données de réponse
       _currentLat = data['latitude']?.toDouble();
       _currentLon = data['longitude']?.toDouble();
-      
-      // Récupère le nom de la ville depuis les coordonnées
-      if (_currentLat != null && _currentLon != null) {
-        _cityName = await _weatherService.getCityNameFromCoordinates(
-          _currentLat!,
-          _currentLon!,
-        );
-      }
+            
       
       setState(() {
         _weather = WeatherModel.fromJson(data); // Conversion simplifiée
