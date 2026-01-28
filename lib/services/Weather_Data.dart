@@ -1,81 +1,187 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class WeatherService {
   final Dio _dio = Dio();
 
-  /// Récupère les données météo à partir d'une ville
-  Future<Map<String, dynamic>> fetchWeatherData(String city) async {
-    List<Location> locations = await locationFromAddress(city);
-    double lat = locations[0].latitude;
-    double lon = locations[0].longitude;
+  Future<void> fetchWeatherData(String city) async {
+    // On demande la permission de localisation + on verifie qu'on l'a bien
+    LocationPermission permission;
 
-    return _fetchWeatherFromCoordinates(lat, lon);
-  }
-
-  /// Récupère les données météo à partir de la position GPS de l'utilisateur
-  Future<Map<String, dynamic>> fetchWeatherDataByLocation() async {
-    // Vérifie si les services de localisation sont activés
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Les services de localisation sont désactivés');
-    }
-
-    // Vérifie les permissions
-    LocationPermission permission = await Geolocator.checkPermission();
+    permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw Exception('Permission de localisation refusée');
+        return Future.error('Location permissions are denied');
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Permission de localisation refusée définitivement');
-    }
+    //Initialisation des variables de latitude et longitude
 
-    // Récupère la position actuelle
-    final LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 100,
-    );
+    double lat;
+    double lon;
 
-    Position position = await Geolocator.getCurrentPosition(
-      locationSettings: locationSettings,
-    );
+    // Si on passe la variable "Localisation", on recupere la position actuelle sinon on utilise la geocoding pour recuperer les coordonnees de la ville
 
-    return _fetchWeatherFromCoordinates(position.latitude, position.longitude);
-  }
+    if (city == "Localisation") {
+      final LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      );
 
-  /// Récupère le nom de la ville à partir des coordonnées GPS
-  Future<String> getCityNameFromCoordinates(double lat, double lon) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
-      if (placemarks.isNotEmpty) {
-        return placemarks[0].locality ?? placemarks[0].subAdministrativeArea ?? 'Position actuelle';
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      );
+      lat = position.latitude;
+      lon = position.longitude;
+    } else {
+      try {
+        print('Geocoding address: $city');
+        
+        // Utilisation de l'API Nominatim pour le geocoding
+        final geoResponse = await _dio.get(
+          'https://nominatim.openstreetmap.org/search',
+          queryParameters: {
+            'q': city,
+            'format': 'json',
+            'limit': 1,
+          },
+          options: Options(
+            headers: {
+              'User-Agent': 'WeatherApp/1.0',
+            },
+          ),
+        );
+        
+        print('Geocoding result for $city: ${geoResponse.data}');
+        
+        if (geoResponse.data == null || (geoResponse.data as List).isEmpty) {
+          throw Exception('Impossible de trouver des coordonnées pour $city');
+        }
+        
+        final location = (geoResponse.data as List)[0];
+        lat = double.parse(location['lat']);
+        lon = double.parse(location['lon']);
+        
+        print('Coordonnées trouvées: lat=$lat, lon=$lon');
+      } catch (e) {
+        print('Erreur geocoding pour $city: $e');
+        rethrow;
       }
-      return 'Position actuelle';
-    } catch (e) {
-      return 'Position actuelle';
     }
-  }
 
-  /// Méthode privée pour récupérer les données météo depuis des coordonnées
-  Future<Map<String, dynamic>> _fetchWeatherFromCoordinates(
-      double lat, double lon) async {
+    // Récupération des données météo depuis l'API avec les coordonnées obtenues
     try {
       final response = await _dio.get(
         'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&daily=temperature_2m_max,temperature_2m_min,sunset,sunrise&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,surface_pressure,visibility,uv_index,cloud_cover,wind_speed_10m&current=temperature_2m,apparent_temperature',
       );
-      
       if (response.statusCode == 200) {
-        return response.data as Map<String, dynamic>;
+        return response.data;
       } else {
         throw Exception('Failed to load weather data');
       }
+
+      // Gestion des erreurs de requête
     } catch (e) {
       throw Exception('Failed to load weather data : $e');
+    }
+  }
+
+  // Fonction pour récupérer uniquement la température actuelle pour la page de la liste des villes
+
+  Future<String> fetchTempData(String city) async {
+    LocationPermission permission;
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    //Initialisation des variables de latitude et longitude
+
+    late double lat;
+    late double lon;
+
+    // Si on passe la variable "Localisation", on recupere la position actuelle sinon on utilise la geocoding pour recuperer les coordonnees de la ville
+
+    if (city == "Localisation") {
+      final LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      );
+
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      );
+      lat = position.latitude;
+      lon = position.longitude;
+    } 
+
+    else {
+      try {
+        print('Geocoding address: $city');
+        
+        // Utilisation de l'API Nominatim pour le geocoding
+        final geoResponse = await _dio.get(
+          'https://nominatim.openstreetmap.org/search',
+          queryParameters: {
+            'q': city,
+            'format': 'json',
+            'limit': 1,
+          },
+          options: Options(
+            headers: {
+              'User-Agent': 'WeatherApp/1.0',
+            },
+          ),
+        );
+        
+        print('Geocoding result for $city: ${geoResponse.data}');
+        
+        if (geoResponse.data == null || (geoResponse.data as List).isEmpty) {
+          throw Exception('Impossible de trouver des coordonnées pour $city');
+        }
+        
+        final location = (geoResponse.data as List)[0];
+        lat = double.parse(location['lat']);
+        lon = double.parse(location['lon']);
+        
+        print('Coordonnées trouvées: lat=$lat, lon=$lon');
+      } catch (e) {
+        print('Erreur geocoding pour $city: $e');
+        rethrow;
+      }
+    }
+    // Récupération des données météo depuis l'API avec les coordonnées obtenues
+    try {
+      final response = await _dio.get(
+        'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m&timezone=Europe%2FLondon',
+      );
+      print('Réponse API pour $city: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        if (response.data == null ||
+            response.data['current'] == null ||
+            response.data['current']['temperature_2m'] == null) {
+          print('Données manquantes dans la réponse API: ${response.data}');
+          throw Exception('Données météo incomplètes');
+        }
+        String data = response.data['current']['temperature_2m'].toString();
+        print('Température pour $city: $data°C');
+        return data;
+      } else {
+        throw Exception('Erreur API: ${response.statusCode}');
+      }
+
+      // Gestion des erreurs de requête
+    } catch (e) {
+      print('Erreur complète fetchTempData: $e');
+      rethrow;
     }
   }
 }

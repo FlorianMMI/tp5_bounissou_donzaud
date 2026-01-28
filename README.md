@@ -1,16 +1,35 @@
-# tp5_bounissou_donzaud
+# Nom du Projet
 
-A new Flutter project.
+## 👥 Équipe
+- Prénom Nom (email)
+- Prénom Nom (email)
 
-## Getting Started
+## 📱 Description
+[Description du projet en 3-5 phrases]
 
-This project is a starting point for a Flutter application.
+## 🎯 Orientation choisie
+[Riche en fonctionnel / Riche en design / Équilibrée]
 
-A few resources to get you started if this is your first Flutter project:
+## ✅ Contraintes respectées
+- [ ] Contrainte 1
+- [ ] Contrainte 2
+- [ ] Contrainte 3
+- [ ] Contrainte 4
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🚀 Installation
+[Instructions pour lancer le projet]
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Screenshots
+[3-5 captures d'écran de l'application]
+
+## 🎨 Design (si applicable)
+[Lien vers le template Dribbble utilisé]
+
+## 🔑 API/Credentials (si applicable)
+[Instructions pour obtenir les clés API nécessaires]
+
+## 🧪 Tests
+[Commande pour lancer les tests s'il y en a]
+
+## 📝 Difficultés rencontrées
+[2-3 défis techniques que vous avez surmontés]
