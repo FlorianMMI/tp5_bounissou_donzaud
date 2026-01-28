@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tp5_bounissou_donzaud/pages/main_page.dart';
-import 'package:tp5_bounissou_donzaud/pages/list_ville.dart';
-import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

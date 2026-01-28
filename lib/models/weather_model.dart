@@ -40,7 +40,8 @@ class WeatherModel {
       minTemp: json['daily']?['temperature_2m_min']?[0]?.toDouble() ?? 0.0,
       humidity: json['hourly']?['relative_humidity_2m']?[0]?.toDouble() ?? 0.0,
       precipitation: json['hourly']?['precipitation']?[0]?.toDouble() ?? 0.0,
-      precipProbability: json['hourly']?['precipitation_probability']?[0]?.toInt() ?? 0,
+      precipProbability:
+          json['hourly']?['precipitation_probability']?[0]?.toInt() ?? 0,
       windSpeed: json['hourly']?['wind_speed_10m']?[0]?.toDouble() ?? 0.0,
       pressure: json['hourly']?['surface_pressure']?[0]?.toDouble() ?? 0.0,
       uvIndex: json['hourly']?['uv_index']?[0]?.toDouble() ?? 0.0,

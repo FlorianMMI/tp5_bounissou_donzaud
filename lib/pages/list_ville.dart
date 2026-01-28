@@ -31,25 +31,19 @@ class _ListVilleState extends State<ListVille> {
 
       // Instancier "Localisation" par défaut et récupérer la température
       Map<String, String> tempVilles = {};
-      final localisationTemp = await weatherService.fetchTempData(
-        "Limoges",
-      );
+      final localisationTemp = await weatherService.fetchTempData("Limoges");
       tempVilles["Localisation"] = localisationTemp;
 
       // Récupérer les villes depuis SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       List<String> savedVilles = prefs.getStringList('villes') ?? [];
-      
 
       // Charger la température pour chaque ville sauvegardée
       for (String ville in savedVilles) {
-        
         try {
           final temp = await weatherService.fetchTempData(ville);
           tempVilles[ville] = temp;
-          
         } catch (e) {
-          
           String errorMsg = e.toString();
           if (errorMsg.contains('Impossible de trouver')) {
             tempVilles[ville] = "?";
@@ -60,7 +54,6 @@ class _ListVilleState extends State<ListVille> {
           }
         }
       }
-      
 
       setState(() {
         villes = tempVilles;

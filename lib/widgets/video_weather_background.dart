@@ -32,7 +32,6 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
   void initState() {
     super.initState();
     _initializeVideo();
-    widget.scrollController?.addListener(_onScroll);
   }
 
   @override
@@ -43,28 +42,6 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
         oldWidget.precipitation != widget.precipitation ||
         oldWidget.temperature != widget.temperature) {
       _initializeVideo();
-    }
-    
-    // Met à jour le listener si le controller change
-    if (oldWidget.scrollController != widget.scrollController) {
-      oldWidget.scrollController?.removeListener(_onScroll);
-      widget.scrollController?.addListener(_onScroll);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.scrollController?.removeListener(_onScroll);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  /// Écoute le scroll pour ajuster l'opacité du gradient
-  void _onScroll() {
-    if (widget.scrollController != null) {
-      setState(() {
-        _scrollOffset = widget.scrollController!.offset;
-      });
     }
   }
 
@@ -107,16 +84,18 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
 
     // Crée un nouveau contrôleur
     _controller = VideoPlayerController.asset(newVideo)
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {});
-          _controller.play();
-          _controller.setLooping(true);
-          _controller.setVolume(0); // Pas de son
-        }
-      }).catchError((error) {
-        debugPrint('Erreur chargement vidéo: $error');
-      });
+      ..initialize()
+          .then((_) {
+            if (mounted) {
+              setState(() {});
+              _controller.play();
+              _controller.setLooping(true);
+              _controller.setVolume(0); // Pas de son
+            }
+          })
+          .catchError((error) {
+            debugPrint('Erreur chargement vidéo: $error');
+          });
   }
 
   @override
@@ -126,15 +105,15 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
         // Vidéo en fond fixe
         if (_controller.value.isInitialized)
           Positioned.fill(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
-                ),
-              )
-            )
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _controller.value.size.width,
+                height: _controller.value.size.height,
+                child: VideoPlayer(_controller),
+              ),
+            ),
+          )
         else
           // Fond noir pendant le chargement
           Container(color: Colors.black),
