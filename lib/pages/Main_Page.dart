@@ -29,8 +29,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   WeatherModel? _weather; // Modèle simplifié des données météo
   bool _isLoading = true;
   String _cityName = "Chargement...";
-  double? _currentLat; // Latitude actuelle
-  double? _currentLon; // Longitude actuelle
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   @override
@@ -47,6 +45,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     _loadWeatherData();
   }
 
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
   /// Charge les données météo depuis l'API en utilisant la géolocalisation
   Future<void> _loadWeatherData() async {
     setState(() {
@@ -56,10 +60,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     try {
       // Récupère les données météo via GPS
       final data = await _weatherService.fetchWeatherData("Localisation");
-
-      // Récupère les coordonnées depuis les données de réponse
-      _currentLat = data['latitude']?.toDouble();
-      _currentLon = data['longitude']?.toDouble();
 
       setState(() {
         _weather = WeatherModel.fromJson(data); // Conversion simplifiée

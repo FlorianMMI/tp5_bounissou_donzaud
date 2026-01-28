@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 /// Fond vidéo qui change en fonction de la météo et de l'heure
-/// La vidéo est en haut et laisse place à un gradient en scrollant
 class VideoWeatherBackground extends StatefulWidget {
   final Widget child;
   final int cloudCover; // Couverture nuageuse (0-100%)
   final double precipitation; // Précipitations en mm
   final double temperature; // Température en °C
-  final ScrollController? scrollController;
 
   const VideoWeatherBackground({
     super.key,
@@ -16,7 +14,6 @@ class VideoWeatherBackground extends StatefulWidget {
     this.cloudCover = 50,
     this.precipitation = 0,
     this.temperature = 15,
-    this.scrollController,
   });
 
   @override
@@ -24,14 +21,21 @@ class VideoWeatherBackground extends StatefulWidget {
 }
 
 class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   String _currentVideo = '';
-  double _scrollOffset = 0.0;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     _initializeVideo();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -74,28 +78,41 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
   }
 
   /// Initialise ou change la vidéo
-  void _initializeVideo() {
+  void _initializeVideo() async {
     final newVideo = _getVideoPath();
 
     // Ne change pas si c'est déjà la bonne vidéo
     if (newVideo == _currentVideo) return;
+    if (_isDisposed) return;
 
     _currentVideo = newVideo;
 
+    // Dispose l'ancien contrôleur pour libérer les ressources
+    final oldController = _controller;
+    
     // Crée un nouveau contrôleur
-    _controller = VideoPlayerController.asset(newVideo)
-      ..initialize()
-          .then((_) {
-            if (mounted) {
-              setState(() {});
-              _controller.play();
-              _controller.setLooping(true);
-              _controller.setVolume(0); // Pas de son
-            }
-          })
-          .catchError((error) {
-            debugPrint('Erreur chargement vidéo: $error');
-          });
+    final newController = VideoPlayerController.asset(newVideo);
+    _controller = newController;
+
+    try {
+      await newController.initialize();
+      
+      // Vérifie si le widget est toujours monté et si c'est toujours le bon contrôleur
+      if (!_isDisposed && mounted && _controller == newController) {
+        await newController.setLooping(true);
+        await newController.setVolume(0); // Pas de son
+        await newController.play();
+        
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    } catch (error) {
+      debugPrint('Erreur chargement vidéo: $error');
+    } finally {
+      // Dispose l'ancien contrôleur après le chargement du nouveau
+      oldController?.dispose();
+    }
   }
 
   @override
@@ -103,14 +120,14 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     return Stack(
       children: [
         // Vidéo en fond fixe
-        if (_controller.value.isInitialized)
+        if (_controller?.value.isInitialized == true)
           Positioned.fill(
             child: FittedBox(
               fit: BoxFit.cover,
               child: SizedBox(
-                width: _controller.value.size.width,
-                height: _controller.value.size.height,
-                child: VideoPlayer(_controller),
+                width: _controller!.value.size.width,
+                height: _controller!.value.size.height,
+                child: VideoPlayer(_controller!),
               ),
             ),
           )
