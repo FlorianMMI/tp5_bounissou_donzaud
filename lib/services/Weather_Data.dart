@@ -153,7 +153,7 @@ class WeatherService {
     // Récupération des données météo depuis l'API avec les coordonnées obtenues
     try {
       final response = await _dio.get(
-        'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m&timezone=Europe%2FLondon',
+        'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,is_day&timezone=Europe%2FLondon',
       );
       
 

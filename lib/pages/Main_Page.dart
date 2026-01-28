@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tp5_bounissou_donzaud/pages/list_ville.dart';
 import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
 import 'package:tp5_bounissou_donzaud/widgets/glass_container.dart';
 import 'package:tp5_bounissou_donzaud/widgets/weather_info_card.dart';
@@ -16,14 +17,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   final WeatherService _weatherService = WeatherService();
   WeatherModel? _weather; // Modèle simplifié des données météo
   bool _isLoading = true;
-  String _cityName = "Chargement...";
-  double? _currentLat; // Latitude actuelle
-  double? _currentLon; // Longitude actuelle
+  String? _cityName;
+  dynamic data;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   @override
   void initState() {
     super.initState();
+    _cityName = null;
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -40,15 +41,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     setState(() {
       _isLoading = true;
     });
-
+    
     try {
       // Récupère les données météo via GPS
-      final data = await _weatherService.fetchWeatherData("Localisation");
+      if(_cityName == null){
+       data = await _weatherService.fetchWeatherData("Localisation");
+      }
+      else {
+         data = await _weatherService.fetchWeatherData(_cityName!);
+      }
       
-      // Récupère les coordonnées depuis les données de réponse
-      _currentLat = data['latitude']?.toDouble();
-      _currentLon = data['longitude']?.toDouble();
-            
       
       setState(() {
         _weather = WeatherModel.fromJson(data); // Conversion simplifiée
@@ -64,7 +66,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red.withOpacity(0.8),
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
             action: SnackBarAction(
               label: 'Réessayer',
               textColor: Colors.white,
@@ -94,9 +96,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Récupération de votre position...',
+                        'Chargement des données météo...',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withAlpha(230),
                           fontSize: 16,
                         ),
                       ),
@@ -147,7 +149,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               const Icon(Icons.location_on, color: Colors.white, size: 28),
               const SizedBox(width: 10),
               Text(
-                _cityName,
+                _cityName ?? "Localisation",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -160,6 +162,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
             onPressed: _loadWeatherData,
           ),
+          IconButton(onPressed: () async {
+            final city = await Navigator.push<String>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListVille(),
+              ),
+            );
+            _cityName = city;
+            _loadWeatherData();
+          }
+          , icon: const Icon(Icons.location_city, color: Colors.white, size: 28))
         ],
       ),
     );
@@ -210,7 +223,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             'Ressenti ${_weather!.apparentTemp.toStringAsFixed(1)}°C',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -235,7 +248,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     'Max',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -243,7 +256,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               Container(
                 height: 50,
                 width: 1,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.5),
               ),
               Column(
                 children: [
@@ -261,7 +274,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     'Min',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -346,7 +359,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               child: WeatherInfoCard(
                 icon: Icons.wb_sunny,
                 title: 'UV Index',
-                value: _weather!.uvIndex.toStringAsFixed(1),
+                value: (_weather!.uvIndex * 10).toString(),
                 iconColor: Colors.amber.shade300,
               ),
             ),
