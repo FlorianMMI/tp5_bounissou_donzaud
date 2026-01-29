@@ -148,19 +148,21 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             children: [
               const Icon(Icons.location_on, color: Colors.white, size: 28),
               const SizedBox(width: 10),
-              Text(
-                _cityName ?? "Localisation",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              SizedBox(
+                width: 191,
+                child: Text(
+                  _cityName ?? "Localisation",
+                  overflow: TextOverflow.ellipsis,
+                  
+                  style: const TextStyle(
+                    overflow: TextOverflow.ellipsis,
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white, size: 28),
-            onPressed: _loadWeatherData,
           ),
           IconButton(onPressed: () async {
             final city = await Navigator.push<String>(
