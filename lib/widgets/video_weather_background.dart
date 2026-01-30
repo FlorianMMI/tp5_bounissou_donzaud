@@ -23,7 +23,6 @@ class VideoWeatherBackground extends StatefulWidget {
 class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
   VideoPlayerController? _controller;
   String _currentVideo = '';
-  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -33,7 +32,6 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
 
   @override
   void dispose() {
-    _isDisposed = true;
     _controller?.dispose();
     super.dispose();
   }
@@ -46,29 +44,6 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
         oldWidget.precipitation != widget.precipitation ||
         oldWidget.temperature != widget.temperature) {
       _initializeVideo();
-    }
-    
-    // Met à jour le listener si le controller change
-    if (oldWidget.scrollController != widget.scrollController) {
-      oldWidget.scrollController?.removeListener(_onScroll);
-      widget.scrollController?.addListener(_onScroll);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.scrollController?.removeListener(_onScroll);
-    _controller.pause();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  /// Écoute le scroll pour ajuster l'opacité du gradient
-  void _onScroll() {
-    if (widget.scrollController != null) {
-      setState(() {
-        _scrollOffset = widget.scrollController!.offset;
-      });
     }
   }
 
@@ -105,36 +80,34 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     final newVideo = _getVideoPath();
 
     // Ne change pas si c'est déjà la bonne vidéo
-    if (newVideo == _currentVideo && _controller.value.isInitialized) return;
+    if (newVideo == _currentVideo && _controller?.value.isInitialized == true) return;
 
     // Dispose de l'ancien contrôleur avant d'en créer un nouveau
     if (_currentVideo.isNotEmpty) {
-      _controller.pause();
-      _controller.dispose();
+      _controller?.pause();
+      _controller?.dispose();
     }
 
     _currentVideo = newVideo;
 
-    // Crée un nouveau contrôleur avec options optimisées
-    _controller = VideoPlayerController.asset(
-      newVideo,
-      videoPlayerOptions: VideoPlayerOptions(
-        allowBackgroundPlayback: false,
-        mixWithOthers: false,
-      ),
-    )..initialize().then((_) {
-        if (mounted) {
-          setState(() {});
-          _controller.play();
-          _controller.setLooping(true);
-          _controller.setVolume(0);
-        }
-      }
+    try {
+      // Crée un nouveau contrôleur avec options optimisées
+      _controller = VideoPlayerController.asset(
+        newVideo,
+        videoPlayerOptions: VideoPlayerOptions(
+          allowBackgroundPlayback: false,
+          mixWithOthers: false,
+        ),
+      )..initialize().then((_) {
+          if (mounted) {
+            setState(() {});
+            _controller?.play();
+            _controller?.setLooping(true);
+            _controller?.setVolume(0);
+          }
+        });
     } catch (error) {
       debugPrint('Erreur chargement vidéo: $error');
-    } finally {
-      // Dispose l'ancien contrôleur après le chargement du nouveau
-      oldController?.dispose();
     }
   }
 
