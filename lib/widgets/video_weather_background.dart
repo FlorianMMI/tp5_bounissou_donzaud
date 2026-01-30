@@ -106,13 +106,13 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     _currentVideo = newVideo;
 
     // Crée un nouveau contrôleur
-    _controller = VideoPlayerController.asset(newVideo)
+    _controller = VideoPlayerController.asset(newVideo, videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true, mixWithOthers: true))
       ..initialize().then((_) {
         if (mounted) {
           setState(() {});
           _controller.play();
           _controller.setLooping(true);
-          _controller.setVolume(0); // Pas de son
+          _controller.setVolume(0);
         }
       }).catchError((error) {
         debugPrint('Erreur chargement vidéo: $error');
