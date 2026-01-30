@@ -55,6 +55,7 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
   @override
   void dispose() {
     widget.scrollController?.removeListener(_onScroll);
+    _controller.pause();
     _controller.dispose();
     super.dispose();
   }
@@ -101,13 +102,24 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     final newVideo = _getVideoPath();
 
     // Ne change pas si c'est déjà la bonne vidéo
-    if (newVideo == _currentVideo) return;
+    if (newVideo == _currentVideo && _controller.value.isInitialized) return;
+
+    // Dispose de l'ancien contrôleur avant d'en créer un nouveau
+    if (_currentVideo.isNotEmpty) {
+      _controller.pause();
+      _controller.dispose();
+    }
 
     _currentVideo = newVideo;
 
-    // Crée un nouveau contrôleur
-    _controller = VideoPlayerController.asset(newVideo, videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true, mixWithOthers: true))
-      ..initialize().then((_) {
+    // Crée un nouveau contrôleur avec options optimisées
+    _controller = VideoPlayerController.asset(
+      newVideo,
+      videoPlayerOptions: VideoPlayerOptions(
+        allowBackgroundPlayback: false,
+        mixWithOthers: false,
+      ),
+    )..initialize().then((_) {
         if (mounted) {
           setState(() {});
           _controller.play();
