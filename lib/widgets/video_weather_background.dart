@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 /// Fond vidéo qui change en fonction de la météo et de l'heure
-/// La vidéo est en haut et laisse place à un gradient en scrollant
 class VideoWeatherBackground extends StatefulWidget {
   final Widget child;
   final int cloudCover; // Couverture nuageuse (0-100%)
   final double precipitation; // Précipitations en mm
   final double temperature; // Température en °C
-  final ScrollController? scrollController;
 
   const VideoWeatherBackground({
     super.key,
@@ -16,7 +14,6 @@ class VideoWeatherBackground extends StatefulWidget {
     this.cloudCover = 50,
     this.precipitation = 0,
     this.temperature = 15,
-    this.scrollController,
   });
 
   @override
@@ -24,15 +21,21 @@ class VideoWeatherBackground extends StatefulWidget {
 }
 
 class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   String _currentVideo = '';
-  double _scrollOffset = 0.0;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     _initializeVideo();
-    widget.scrollController?.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -98,7 +101,7 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
   }
 
   /// Initialise ou change la vidéo
-  void _initializeVideo() {
+  void _initializeVideo() async {
     final newVideo = _getVideoPath();
 
     // Ne change pas si c'est déjà la bonne vidéo
@@ -126,9 +129,13 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
           _controller.setLooping(true);
           _controller.setVolume(0);
         }
-      }).catchError((error) {
-        debugPrint('Erreur chargement vidéo: $error');
-      });
+      }
+    } catch (error) {
+      debugPrint('Erreur chargement vidéo: $error');
+    } finally {
+      // Dispose l'ancien contrôleur après le chargement du nouveau
+      oldController?.dispose();
+    }
   }
 
   @override
@@ -136,17 +143,17 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     return Stack(
       children: [
         // Vidéo en fond fixe
-        if (_controller.value.isInitialized)
+        if (_controller?.value.isInitialized == true)
           Positioned.fill(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
-                ),
-              )
-            )
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _controller!.value.size.width,
+                height: _controller!.value.size.height,
+                child: VideoPlayer(_controller!),
+              ),
+            ),
+          )
         else
           // Fond noir pendant le chargement
           Container(color: Colors.black),

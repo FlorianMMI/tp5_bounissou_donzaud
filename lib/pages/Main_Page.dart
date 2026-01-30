@@ -1,10 +1,22 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:tp5_bounissou_donzaud/pages/list_ville.dart';
 import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
-import 'package:tp5_bounissou_donzaud/widgets/glass_container.dart';
 import 'package:tp5_bounissou_donzaud/widgets/weather_info_card.dart';
 import 'package:tp5_bounissou_donzaud/widgets/video_weather_background.dart';
 import 'package:tp5_bounissou_donzaud/models/weather_model.dart';
+
+/// ScrollBehavior qui désactive l'effet d'overscroll (glow)
+class _NoGlowScrollBehavior extends ScrollBehavior {
+  const _NoGlowScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -84,7 +96,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: $e'),
-            backgroundColor: Colors.red.withValues(alpha: 0.8),
+            backgroundColor: Colors.red.withOpacity(0.8),
             action: SnackBarAction(
               label: 'Réessayer',
               textColor: Colors.white,
@@ -109,9 +121,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
+                      const CircularProgressIndicator(color: Colors.white),
                       const SizedBox(height: 20),
                       Text(
                         'Chargement des données météo...',
@@ -127,22 +137,25 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                   onRefresh: _loadWeatherData,
                   color: Colors.white,
                   backgroundColor: Colors.blue.shade900,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(),
-                            const SizedBox(height: 30),
-                            _buildMainTemperatureCard(),
-                            const SizedBox(height: 30),
-                            _buildWeatherGrid(),
-                            const SizedBox(height: 20),
-                          ],
+                  child: ScrollConfiguration(
+                    behavior: const _NoGlowScrollBehavior(),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHeader(),
+                              const SizedBox(height: 30),
+                              _buildMainTemperatureCard(),
+                              const SizedBox(height: 30),
+                              _buildWeatherGrid(),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -153,47 +166,73 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
     );
   }
 
-  /// En-tête avec nom de ville et bouton refresh
+  /// En-tête avec nom de ville
   Widget _buildHeader() {
-    return GlassContainer(
-      blur: 25,
-      opacity: 0.3,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.location_on, color: Colors.white, size: 28),
-              const SizedBox(width: 10),
-              SizedBox(
-                width: 191,
-                child: Text(
-                  _cityName ?? "Localisation",
-                  overflow: TextOverflow.ellipsis,
-                  
-                  style: const TextStyle(
-                    overflow: TextOverflow.ellipsis,
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.15),
+                ],
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      _cityName ?? 'Localisation',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                IconButton(
+                  onPressed: () async {
+                    final city = await Navigator.push<String>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListVille(),
+                      ),
+                    );
+                    if (city != null && city.isNotEmpty) {
+                      setState(() {
+                        _cityName = city;
+                      });
+                      _loadWeatherData();
+                    }
+                  },
+                  icon: const Icon(Icons.location_city, color: Colors.white, size: 28),
+                ),
+              ],
+            ),
           ),
-          IconButton(onPressed: () async {
-            final city = await Navigator.push<String>(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ListVille(),
-              ),
-            );
-            _cityName = city;
-            _loadWeatherData();
-          }
-          , icon: const Icon(Icons.location_city, color: Colors.white, size: 28))
-        ],
+        ),
       ),
     );
   }
@@ -202,106 +241,137 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
   Widget _buildMainTemperatureCard() {
     if (_weather == null) return const SizedBox();
 
-    return GlassContainer(
-      blur: 30,
-      opacity: 0.25,
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          // Emoji basé sur la couverture nuageuse et pluie
-          Text(
-            _weather!.weatherEmoji,
-            style: const TextStyle(fontSize: 80),
-          ),
-          const SizedBox(height: 20),
-          // Température actuelle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _weather!.currentTemp.toStringAsFixed(1),
-                style: const TextStyle(
-                  fontSize: 72,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.25),
+              // gradient: LinearGradient(
+              //   begin: Alignment.topLeft,
+              //   end: Alignment.bottomRight,
+              //   colors: [
+              //     Colors.white.withOpacity(0.25),
+              //     Colors.white.withOpacity(0.125),
+              //   ],
+              // ),
+            ),
+            child: Column(
+              children: [
+                // Emoji basé sur la couverture nuageuse et pluie
+                Text(
+                  _weather!.weatherEmoji,
+                  style: const TextStyle(fontSize: 80),
                 ),
-              ),
-              const Text(
-                '°C',
-                style: TextStyle(
-                  fontSize: 32,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w300,
+                const SizedBox(height: 20),
+                // Température actuelle
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _weather!.currentTemp.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 72,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      '°C',
+                      style: TextStyle(
+                        fontSize: 32,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Température ressentie
-          Text(
-            'Ressenti ${_weather!.apparentTemp.toStringAsFixed(1)}°C',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w400,
+                const SizedBox(height: 16),
+                // Température ressentie
+                Text(
+                  'Ressenti ${_weather!.apparentTemp.toStringAsFixed(1)}°C',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white.withOpacity(0.8),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Températures min et max du jour
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.arrow_upward,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_weather!.maxTemp.toStringAsFixed(1)}°',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          'Max',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      height: 50,
+                      width: 1,
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.arrow_downward,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_weather!.minTemp.toStringAsFixed(1)}°',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          'Min',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          // Températures min et max du jour
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
-                children: [
-                  const Icon(Icons.arrow_upward, color: Colors.white70, size: 20),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${_weather!.maxTemp.toStringAsFixed(1)}°',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    'Max',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                height: 50,
-                width: 1,
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
-              Column(
-                children: [
-                  const Icon(Icons.arrow_downward, color: Colors.white70, size: 20),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${_weather!.minTemp.toStringAsFixed(1)}°',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    'Min',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -322,6 +392,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.humidity.toStringAsFixed(0),
                 unit: '%',
                 iconColor: Colors.lightBlue.shade200,
+                dataType: 'humidity',
               ),
             ),
             const SizedBox(width: 16),
@@ -332,6 +403,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.precipitation.toStringAsFixed(1),
                 unit: 'mm',
                 iconColor: Colors.blue.shade300,
+                dataType: 'precipitation',
               ),
             ),
           ],
@@ -344,9 +416,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
               child: WeatherInfoCard(
                 icon: Icons.cloud,
                 title: 'Probabilité',
-                value: _weather!.precipProbability.toString(),
+                value: _weather!.precipProbability.toStringAsFixed(0),
                 unit: '%',
                 iconColor: Colors.grey.shade300,
+                dataType: 'precipProbability',
               ),
             ),
             const SizedBox(width: 16),
@@ -357,6 +430,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.windSpeed.toStringAsFixed(1),
                 unit: 'km/h',
                 iconColor: Colors.cyan.shade200,
+                dataType: 'wind',
               ),
             ),
           ],
@@ -372,6 +446,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.pressure.toStringAsFixed(0),
                 unit: 'hPa',
                 iconColor: Colors.orange.shade200,
+                dataType: 'pressure',
               ),
             ),
             const SizedBox(width: 16),
@@ -381,6 +456,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 title: 'UV Index',
                 value: (_weather!.uvIndex * 10).toString(),
                 iconColor: Colors.amber.shade300,
+                dataType: 'uvIndex',
               ),
             ),
           ],
@@ -396,6 +472,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.visibility.toStringAsFixed(1),
                 unit: 'km',
                 iconColor: Colors.purple.shade200,
+                dataType: 'visibility',
               ),
             ),
             const SizedBox(width: 16),
@@ -406,6 +483,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
                 value: _weather!.cloudCover.toString(),
                 unit: '%',
                 iconColor: Colors.indigo.shade200,
+                dataType: 'cloudCover',
               ),
             ),
           ],
