@@ -13,7 +13,7 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
+class _MainPageState extends State<MainPage> with TickerProviderStateMixin, WidgetsBindingObserver {
   final WeatherService _weatherService = WeatherService();
   WeatherModel? _weather; // Modèle simplifié des données météo
   bool _isLoading = true;
@@ -21,9 +21,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   dynamic data;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _cityName = null;
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -34,6 +36,22 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       curve: Curves.easeIn,
     );
     _loadWeatherData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Libère les ressources quand l'app passe en arrière-plan
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // Les vidéos seront automatiquement mises en pause
+      debugPrint('App en arrière-plan - libération ressources');
+    }
   }
 
   /// Charge les données météo depuis l'API en utilisant la géolocalisation

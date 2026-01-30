@@ -15,6 +15,7 @@ class _ListVilleState extends State<ListVille> {
   bool isLoading = false;
   String errorMessage = "";
   Map<String, String> villes = {};
+  String? localisation;
 
   @override
   void initState() {
@@ -30,39 +31,40 @@ class _ListVilleState extends State<ListVille> {
 
     try {
       WeatherService weatherService = WeatherService();
-
-      // Instancier "Localisation" par défaut et récupérer la température
       Map<String, String> tempVilles = {};
-      final localisationTemp = await weatherService.fetchTempData(
-        "Limoges",
-      );
-      tempVilles["Localisation"] = localisationTemp;
 
       // Récupérer les villes depuis SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       List<String> savedVilles = prefs.getStringList('villes') ?? [];
       
-
-      // Charger la température pour chaque ville sauvegardée
-      for (String ville in savedVilles) {
-        
-        try {
-          final temp = await weatherService.fetchTempData(ville);
-          tempVilles[ville] = temp;
-          
-        } catch (e) {
-          
-          String errorMsg = e.toString();
-          if (errorMsg.contains('Impossible de trouver')) {
-            tempVilles[ville] = "?";
-          } else if (errorMsg.contains('Données météo incomplètes')) {
-            tempVilles[ville] = "--";
-          } else {
-            tempVilles[ville] = "Err";
-          }
-        }
-      }
+      // Créer une liste de toutes les villes à charger (incluant "Localisation")
+      List<String> allVilles = ["Localisation", ...savedVilles];
       
+      // Paralléliser tous les appels API avec Future.wait
+      final results = await Future.wait(
+        allVilles.map((ville) async {
+          try {
+            final temp = await weatherService.fetchTempData(ville);
+            return MapEntry(ville, temp);
+          } catch (e) {
+            String errorMsg = e.toString();
+            String tempValue;
+            if (errorMsg.contains('Impossible de trouver')) {
+              tempValue = "?";
+            } else if (errorMsg.contains('Données météo incomplètes')) {
+              tempValue = "--";
+            } else {
+              tempValue = "Err";
+            }
+            return MapEntry(ville, tempValue);
+          }
+        }),
+      );
+      
+      // Convertir les résultats en Map
+      for (var entry in results) {
+        tempVilles[entry.key] = entry.value;
+      }
 
       setState(() {
         villes = tempVilles;

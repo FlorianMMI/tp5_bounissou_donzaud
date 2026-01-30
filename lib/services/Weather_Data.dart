@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class WeatherService {
   final Dio _dio = Dio();
-  static const Duration _cacheDuration = Duration(minutes: 30);
+  static const Duration _cacheDuration = Duration(minutes: 5);
 
   // Récupérer les données depuis le cache
   Future<Map<String, dynamic>?> _getCachedData(String city) async {
@@ -127,107 +127,19 @@ class WeatherService {
   }
 
   // Fonction pour récupérer uniquement la température actuelle pour la page de la liste des villes
-
+  // Cette fonction appelle fetchWeatherData pour obtenir toutes les données et cache complet
   Future<String> fetchTempData(String city) async {
-    // Vérifier le cache d'abord pour les températures aussi
-    final cachedData = await _getCachedData(city);
-    if (cachedData != null && 
-        cachedData['current'] != null && 
-        cachedData['current']['temperature_2m'] != null) {
-      print('Température chargée depuis le cache pour $city');
-      return cachedData['current']['temperature_2m'].toString();
-    }
-
-    LocationPermission permission;
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    //Initialisation des variables de latitude et longitude
-
-    late double lat;
-    late double lon;
-
-    // Si on passe la variable "Localisation", on recupere la position actuelle sinon on utilise la geocoding pour recuperer les coordonnees de la ville
-
-    if (city == "Localisation") {
-      final LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: locationSettings,
-      );
-      lat = position.latitude;
-      lon = position.longitude;
-    } 
-
-    else {
-      try {        
-        // Utilisation de l'API Nominatim pour le geocoding
-        final geoResponse = await _dio.get(
-          'https://nominatim.openstreetmap.org/search',
-          queryParameters: {
-            'q': city,
-            'format': 'json',
-            'limit': 1,
-          },
-          options: Options(
-            headers: {
-              'User-Agent': 'WeatherApp/1.0',
-            },
-          ),
-        );
-        
-        
-        
-        if (geoResponse.data == null || (geoResponse.data as List).isEmpty) {
-          throw Exception('Impossible de trouver des coordonnées pour $city');
-        }
-        
-        final location = (geoResponse.data as List)[0];
-        lat = double.parse(location['lat']);
-        lon = double.parse(location['lon']);
-        
-        
-      } catch (e) {
-        
-        rethrow;
-      }
-    }
-    // Récupération des données météo depuis l'API avec les coordonnées obtenues
     try {
-      final response = await _dio.get(
-        'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,is_day&timezone=Europe%2FLondon',
-      );
+      // Appeler fetchWeatherData qui gère déjà le cache et récupère toutes les données
+      final weatherData = await fetchWeatherData(city);
       
-
-      if (response.statusCode == 200) {
-        if (response.data == null ||
-            response.data['current'] == null ||
-            response.data['current']['temperature_2m'] == null) {
-          
-          throw Exception('Données météo incomplètes');
-        }
-        String data = response.data['current']['temperature_2m'].toString();
-        
-        // Sauvegarder les données complètes dans le cache pour une utilisation future
-        await _saveCachedData(city, response.data);
-        
-        return data;
+      if (weatherData['current'] != null && 
+          weatherData['current']['temperature_2m'] != null) {
+        return weatherData['current']['temperature_2m'].toString();
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        throw Exception('Données météo incomplètes');
       }
-
-      // Gestion des erreurs de requête
     } catch (e) {
-      
       rethrow;
     }
   }
