@@ -25,8 +25,22 @@ Instructions pour lancer le projet :
 4. Lancer l'application : `flutter run`
 
 ## 📸 Screenshots
-[3-5 captures d'écran de l'application]
 
+### Photo 1
+![1000022978](https://github.com/user-attachments/assets/b6bfbbdd-8eec-4ca8-a610-888463288cda)
+
+### Photo 2
+![1000022977](https://github.com/user-attachments/assets/c13a1522-fbc2-4984-8503-5e77269a23b4)
+
+### Photo 3
+![1000022976](https://github.com/user-attachments/assets/b8b84582-7098-4bf3-9686-2b6c4bf1b5a2)
+
+### Photo 4
+![1000022972](https://github.com/user-attachments/assets/258d1486-4d19-439c-9b28-e05b72f7f07d)
+
+
+## Vidéo 
+https://www.youtube.com/shorts/oqPoc1LCTRw
 
 ## 🔑 API/Credentials (si applicable)
 Aucune Clé API nécessaire, utilisation de l'API ouverte de Open-Meteo et Nominatim OpenStreetMap.
