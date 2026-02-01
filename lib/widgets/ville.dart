@@ -5,12 +5,14 @@ class Ville extends StatelessWidget {
   final String name;
   final String temp;
   final String? isday;
-  
+  final VoidCallback? onDelete;
+
   const Ville({
     super.key,
     required this.name,
     required this.temp,
     this.isday,
+    this.onDelete,
   });
 
   @override
@@ -27,6 +29,7 @@ class Ville extends StatelessWidget {
             onTap: () {
               Navigator.pop(context, name);
             },
+            onLongPress: onDelete,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),

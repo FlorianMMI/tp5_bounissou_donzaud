@@ -7,6 +7,7 @@ class VideoWeatherBackground extends StatefulWidget {
   final int cloudCover; // Couverture nuageuse (0-100%)
   final double precipitation; // Précipitations en mm
   final double temperature; // Température en °C
+  final DateTime? localTime; // Heure locale de la ville
 
   const VideoWeatherBackground({
     super.key,
@@ -14,6 +15,7 @@ class VideoWeatherBackground extends StatefulWidget {
     this.cloudCover = 50,
     this.precipitation = 0,
     this.temperature = 15,
+    this.localTime,
   });
 
   @override
@@ -42,14 +44,16 @@ class _VideoWeatherBackgroundState extends State<VideoWeatherBackground> {
     // Change de vidéo si les conditions météo ont changé
     if (oldWidget.cloudCover != widget.cloudCover ||
         oldWidget.precipitation != widget.precipitation ||
-        oldWidget.temperature != widget.temperature) {
+        oldWidget.temperature != widget.temperature ||
+        oldWidget.localTime != widget.localTime) {
       _initializeVideo();
     }
   }
 
   /// Sélectionne la bonne vidéo en fonction de la météo et de l'heure
   String _getVideoPath() {
-    final hour = DateTime.now().hour;
+    // Utiliser l'heure locale de la ville si disponible, sinon l'heure locale de l'appareil
+    final hour = widget.localTime?.hour ?? DateTime.now().hour;
 
     // Nuit (20h - 6h)
     if (hour >= 20 || hour < 6) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tp5_bounissou_donzaud/widgets/Ville.dart';
+import 'package:tp5_bounissou_donzaud/widgets/ville.dart';
 import 'package:tp5_bounissou_donzaud/services/weather_data.dart';
 import 'package:tp5_bounissou_donzaud/widgets/addville.dart';
+import 'package:tp5_bounissou_donzaud/widgets/delville.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tp5_bounissou_donzaud/widgets/glass_container.dart';
 import 'dart:ui';
@@ -21,6 +22,10 @@ class _ListVilleState extends State<ListVille> {
   void initState() {
     super.initState();
     _loadVilles();
+  }
+
+  Future<void> _deleteVille(String ville) async {
+    await Delville.showDeleteDialog(context, ville, _loadVilles);
   }
 
   Future<void> _loadVilles() async {
@@ -199,6 +204,7 @@ class _ListVilleState extends State<ListVille> {
                               return Ville(
                                 name: entry.key,
                                 temp: entry.value,
+                                onDelete: () => _deleteVille(entry.key),
                               );
                             }).toList(),
                           ),

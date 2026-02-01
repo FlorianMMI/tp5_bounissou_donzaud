@@ -115,6 +115,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Widg
         cloudCover: _weather?.cloudCover ?? 50,
         precipitation: _weather?.precipitation ?? 0,
         temperature: _weather?.currentTemp ?? 15,
+        localTime: _weather?.localTime,
         child: SafeArea(
           child: _isLoading
               ? Center(
