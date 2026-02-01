@@ -15,6 +15,9 @@ class WeatherModel {
   final double uvIndex;
   final double visibility;
   final int cloudCover;
+  
+  // Heure locale de la ville
+  final DateTime localTime;
 
   WeatherModel({
     required this.currentTemp,
@@ -29,10 +32,19 @@ class WeatherModel {
     required this.uvIndex,
     required this.visibility,
     required this.cloudCover,
+    required this.localTime,
   });
 
   /// Crée un modèle à partir des données brutes de l'API
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
+    // Récupérer l'heure locale depuis l'API (format ISO 8601)
+    DateTime localTime;
+    try {
+      localTime = DateTime.parse(json['current']?['time'] ?? DateTime.now().toIso8601String());
+    } catch (e) {
+      localTime = DateTime.now();
+    }
+    
     return WeatherModel(
       currentTemp: json['current']?['temperature_2m']?.toDouble() ?? 0.0,
       apparentTemp: json['current']?['apparent_temperature']?.toDouble() ?? 0.0,
@@ -47,6 +59,7 @@ class WeatherModel {
       uvIndex: json['hourly']?['uv_index']?[0]?.toDouble() ?? 0.0,
       visibility: (json['hourly']?['visibility']?[0]?.toDouble() ?? 0.0) / 1000,
       cloudCover: json['hourly']?['cloud_cover']?[0]?.toInt() ?? 0,
+      localTime: localTime,
     );
   }
 
